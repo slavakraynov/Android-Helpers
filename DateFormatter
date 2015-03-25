@@ -1,0 +1,217 @@
+public class DateFormatter {
+
+    private static final long SECOND_MILLIS = 1000;
+    private static final long MINUTE_MILLIS = 60 * SECOND_MILLIS;
+    private static final long HOUR_MILLIS = 60 * MINUTE_MILLIS;
+    private static final long DAY_MILLIS = 24 * HOUR_MILLIS;
+    private static final long WEEK_MILLIS = 7 * DAY_MILLIS;
+    private static final long MONTH_MILLIS = 30 * DAY_MILLIS;
+    private static final long YEAR_MILLIS = 52 * WEEK_MILLIS;
+
+    private static final String now = "сейчас";
+    private static final String minute = "минута";
+    private static final String hour = "час";
+    private static final String yesterday = "вчера";
+    private static final String week = "неделя";
+    private static final String month = "месяц";
+    private static final String year = "год";
+    private static final String ago = " назад";
+    private static final String[] minutes = {" минута"," минуты"," минут"};
+    private static final String[] hours = {" час"," часа"," часов"};
+    private static final String[] days = {" день"," дня"," дней"};
+    private static final String[] weeks = {" неделя"," недели"," недель"};
+    private static final String[] months = {" месяц"," месяца"," месяцев"};
+    private static final String[] years = {" год"," года"," лет"};
+
+    private static final String[] minutes_short = {" мин", " мин", " мин"};
+    private static final String[] hours_short = {" ч"," ч"," ч"};
+    private static final String[] days_short = {" д"," д"," д"};
+    private static final String[] weeks_short = {" нед"," нед"," нед"};
+    private static final String[] months_short = {" мес"," мес"," мес"};
+    private static final String[] years_short = {" г"," г"," г"};
+
+    private static enum TYPE {NOW, MINUTE, MINUTES, HOUR, HOURS, YESTERDAY, DAYS, WEEK, WEEKS, MONTH, MONTHS, YEAR, MINUTES_S, HOURS_S, DAYS_S, WEEKS_S, MONTHS_S, YEARS_S, YEARS};
+    private static DateFormatter sDateFormatter;
+
+    private DateFormatter(){}
+
+    public static DateFormatter getInstance(){
+        if (sDateFormatter==null) sDateFormatter = new DateFormatter();
+
+        return sDateFormatter;
+    }
+
+    private DateFormatSymbols myDateFormatSymbols = new DateFormatSymbols(){
+
+        @Override
+        public String[] getMonths() {
+            return TJUIHelper.getTopActivity().getResources().getStringArray(R.array.months);
+        }
+
+    };
+
+    public String russianDate(int offset){
+        Calendar c = Calendar.getInstance();
+        if (offset!=0) c.add(Calendar.DAY_OF_YEAR, 0-offset);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("d MMMM", myDateFormatSymbols );
+        return dateFormat.format(c.getTime());
+    }
+
+    public String getTimeAgo(String date){
+        DateFormat date_set = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        Date d = null;
+
+        try {
+            d = date_set.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        Calendar date_time = Calendar.getInstance();
+        date_time.setTime(d);
+
+        return getTimeAgo(date_time.getTimeInMillis());
+    }
+
+    public String getTimeAgo(int time) {
+        return getTimeAgo((long) time, false);
+    }
+
+    public String getTimeAgo(long time) {
+        return getTimeAgo(time, false);
+    }
+
+    public String getTimeAgo(int time, boolean isShort) {
+        return getTimeAgo((long) time, isShort);
+    }
+
+    public String getTimeAgo(long time, boolean isShort) {
+        if (time < 1000000000000L) {
+            time *= 1000;
+        }
+
+        long now = System.currentTimeMillis();
+        if (time > now || time <= 0) {
+            return null;
+        }
+
+        final long diff = now - time;
+
+        if (isShort) return performDecorationShort(diff);
+        else return performDecoration(diff);
+    }
+
+    private String performDecorationShort(long diff){
+        if (diff < 50 * MINUTE_MILLIS) {
+            return makePlural(diff / MINUTE_MILLIS, TYPE.MINUTES_S.ordinal());
+        } else if (diff < 24 * HOUR_MILLIS) {
+            return makePlural(diff / HOUR_MILLIS, TYPE.HOURS_S.ordinal());
+        } else if (diff < WEEK_MILLIS) {
+            return makePlural(diff / DAY_MILLIS, TYPE.DAYS_S.ordinal());
+        } else if (diff < MONTH_MILLIS) {
+            return makePlural(diff / WEEK_MILLIS, TYPE.WEEKS_S.ordinal());
+        } else if (diff < YEAR_MILLIS) {
+            return makePlural(diff / MONTH_MILLIS, TYPE.MONTHS_S.ordinal());
+        } else {
+            return makePlural(diff / YEAR_MILLIS, TYPE.YEARS_S.ordinal());
+        }
+    }
+
+    private String performDecoration(long diff){
+        if (diff < MINUTE_MILLIS) {
+            return makePlural(diff, TYPE.NOW.ordinal());
+        } else if (diff < 2 * MINUTE_MILLIS) {
+            return makePlural(diff, TYPE.MINUTE.ordinal());
+        } else if (diff < 50 * MINUTE_MILLIS) {
+            return makePlural(diff / MINUTE_MILLIS, TYPE.MINUTES.ordinal());
+        } else if (diff < 90 * MINUTE_MILLIS) {
+            return makePlural(diff, TYPE.HOUR.ordinal());
+        } else if (diff < 24 * HOUR_MILLIS) {
+            return makePlural(diff / HOUR_MILLIS, TYPE.HOURS.ordinal());
+        } else if (diff < 48 * HOUR_MILLIS) {
+            return makePlural(diff, TYPE.YESTERDAY.ordinal());
+        } else if (diff < WEEK_MILLIS) {
+            return makePlural(diff / DAY_MILLIS, TYPE.DAYS.ordinal());
+        } else if (diff < 8 * DAY_MILLIS) {
+            return makePlural(diff / DAY_MILLIS, TYPE.WEEK.ordinal());
+        } else if (diff < MONTH_MILLIS) {
+            return makePlural(diff / WEEK_MILLIS, TYPE.WEEKS.ordinal());
+        } else if (diff < 5 * WEEK_MILLIS) {
+            return makePlural(diff / DAY_MILLIS, TYPE.MONTH.ordinal());
+        } else if (diff < YEAR_MILLIS) {
+            return makePlural(diff / MONTH_MILLIS, TYPE.MONTHS.ordinal());
+        } else if (diff < 13 * MONTH_MILLIS) {
+            return makePlural(diff / MONTH_MILLIS, TYPE.YEAR.ordinal());
+        } else {
+            return makePlural(diff / YEAR_MILLIS, TYPE.YEARS.ordinal());
+        }
+    }
+
+    private String makePlural(long diff, int type){
+        String result = "";
+        TYPE typePlural = TYPE.values()[type];
+        int index = (diff%10==1 && diff%100!=11 ? 0 : diff%10>=2 && diff%10<=4 && (diff%100<10 || diff%100>=20) ? 1 : 2);
+
+        switch (typePlural){
+            case NOW:
+                result = now;
+                break;
+            case MINUTE:
+                result = diff + minute+ago;
+                break;
+            case MINUTES:
+                result = diff + minutes[index]+ago;
+                break;
+            case MINUTES_S:
+                result = diff + minutes_short[index];
+                break;
+            case HOUR:
+                result = hour+ago;
+                break;
+            case HOURS:
+                result = diff + hours[index]+ago;
+                break;
+            case HOURS_S:
+                result = diff + hours_short[index];
+                break;
+            case YESTERDAY:
+                result = yesterday;
+                break;
+            case DAYS:
+                result = diff + days[index]+ago;
+                break;
+            case DAYS_S:
+                result = diff + days_short[index];
+                break;
+            case WEEK:
+                result = week+ago;
+                break;
+            case WEEKS:
+                result = diff + weeks[index]+ago;
+                break;
+            case WEEKS_S:
+                result = diff + weeks_short[index];
+                break;
+            case MONTH:
+                result = month+ago;
+                break;
+            case MONTHS:
+                result = diff + months[index]+ago;
+                break;
+            case MONTHS_S:
+                result = diff + months_short[index]+ago;
+                break;
+            case YEAR:
+                result = year+ago;
+                break;
+            case YEARS:
+                result = diff + years[index]+ago;
+                break;
+            case YEARS_S:
+                result = diff + years_short[index];
+                break;
+        }
+
+        return result;
+    }
+}
