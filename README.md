@@ -7,4 +7,4 @@ Snippets for Android
 ## SharedPreferencesHelper ##
 Класс для удобного доступа к SharedPreferences. Перед использованием нужно инициализировать:
 
-**Добавить** `SharedPreferencesHelper.initialize(this);` в кастомный **Application**
+**Добавить** `SharedPreferencesHelper.initialize(this);` в кастомный **Application**. Список настроек добавлять нужно в константу **PREFS**
