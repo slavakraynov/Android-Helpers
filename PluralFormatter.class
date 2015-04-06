@@ -1,0 +1,28 @@
+public class PluralFormatter {
+    public static final long SECOND_MILLIS = 1000;
+    public static final long MINUTE_MILLIS = 60 * SECOND_MILLIS;
+    public static final long HOUR_MILLIS = 60 * MINUTE_MILLIS;
+    public static final long DAY_MILLIS = 24 * HOUR_MILLIS;
+    public static final long WEEK_MILLIS = 7 * DAY_MILLIS;
+    public static final long MONTH_MILLIS = 30 * DAY_MILLIS;
+    public static final long YEAR_MILLIS = 52 * WEEK_MILLIS;
+
+    /**
+     *
+     * @param count
+     * @param plurals - array{в именительном падеже, в родительном пажеже ед. число, в родительном пажеже множ. число}
+     * @return
+     */
+    public static String make(long count, String[] plurals){
+
+        String result = "";
+        int index = (count%10==1 && count%100!=11 ? 0 : count%10>=2 && count%10<=4 && (count%100<10 || count%100>=20) ? 1 : 2);
+        result = count+" "+plurals[index];
+
+        return result;
+    }
+
+    public static String make(int count, String[] plurals){
+        return make((long) count, plurals);
+    }
+}
