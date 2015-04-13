@@ -157,7 +157,7 @@ public class DateFormatter {
                 result = now;
                 break;
             case MINUTE:
-                result = diff + minute+ago;
+                result = minute + ago;
                 break;
             case MINUTES:
                 result = diff + minutes[index]+ago;
